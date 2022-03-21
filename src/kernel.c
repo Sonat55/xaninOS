@@ -16,17 +16,12 @@
 #include <lib/algorithm.h>
 
 
-char* tmpStr;
-
 
 /*--------------------------------------/
 |wesolego nowego roku :))               |
 |niech xanin rośnie i rośnie            |
 |ja, rok 2021, 31 grudzień, 23:52:35    |
 /--------------------------------------*/
-
-
-
 
 void _start(void)
 {
@@ -35,7 +30,7 @@ void _start(void)
 
     disable_cursor();
 
-    clearScr();
+    screen_clear();
     asm("cli");    //disable interrupts while IDT is not configured
     screen_init(); //init screen management system
 
@@ -43,7 +38,7 @@ void _start(void)
     //*(char*)VGA_TEXT_MEMORY = 0x41;
     //*(char*)(VGA_TEXT_MEMORY + 1) = 0x42;
     set_idt();
-    getTime();
+    time_get();
     keyboard_init();
     
     for(char* i = (char*)0x0; (uint32_t)i < 0x20000; i++)
@@ -54,7 +49,7 @@ void _start(void)
     /*
 
     char a[20],b[20];
-    clearScr();
+    screen_clear();
 
     for(int i = 0; i < 20; i++)
         a[i] = '\0';
@@ -73,34 +68,8 @@ void _start(void)
 
     */
 
-
-    xprintf("%z  .GBJ     ?BBY.                     ,,\n", set_output_color(logo_back_color, logo_front_color));
-    xprintf("%z   :B#Y  !G#P^   .,,.     ..  ..     ''   ..  ..\n", set_output_color(logo_back_color, logo_front_color));
-    xprintf("%z    .G#//#G~    ?PYJJ5P   HuCJJ5G    55  HuCJJJPP.\n", set_output_color(logo_back_color, logo_front_color));
-    xprintf("%z     >###<     ~.   .G#.  I#D   7#:  GP  I#D    P#:\n", set_output_color(logo_back_color, logo_front_color));
-    xprintf("%z   .5#BG#P.    !JYYJ?G#.  I#^   ^#:  GP  I#^    Y#:\n", set_output_color(logo_back_color, logo_front_color));
-    xprintf("%z .Y##/ i#G.   ?#^   :G#.  I#^   ~#:  GP  I#^    Y#:%z  version 22.03v\n", set_output_color(logo_back_color, logo_front_color), set_output_color(black,white));
-    xprintf("%z7GB5.    5BG. .5G555J?B^  I#^   ^#:  P5  I#^    JB:%z  weekday: %s \n\n\n", set_output_color(logo_back_color, logo_front_color), set_output_color(black,white), weekDaysLUT[time.weekDay]);
-
-
-
-    keyboard_command = comBuf;
-
-
-    xprintf("DETECTING USB CONTROLLERS. PLEASE WAIT...\n");
-
-    usb_detect();
-
-    xprintf("\n%zUSB DETECTION TEST ENDED. PRESS ENTER TO START XANIN OS\n",
-            set_output_color(green,white));
-
-
-
-
-    xprintf("\n\n");
-
-
     set_pit();
+
 
     while(!pitActive)
     {
@@ -114,13 +83,46 @@ void _start(void)
 
     cpu_khz = cpu_khz * 7;
     cpu_mhz = cpu_mhz * 7;
+
+    /*
+    uint16_t dd = 10;
+    xprintf("0x%x\n", dd);
+    bit_clear(&dd, 1);
+    xprintf("0x%x\n", dd);
+    */
+
     
+    /*
+
+    xprintf("%z  .GBJ     ?BBY.                     ,,\n", set_output_color(logo_back_color, logo_front_color));
+    xprintf("%z   :B#Y  !G#P^   .,,.     ..  ..     ''   ..  ..\n", set_output_color(logo_back_color, logo_front_color));
+    xprintf("%z    .G#//#G~    ?PYJJ5P   HuCJJ5G    55  HuCJJJPP.\n", set_output_color(logo_back_color, logo_front_color));
+    xprintf("%z     >###<     ~.   .G#.  I#D   7#:  GP  I#D    P#:\n", set_output_color(logo_back_color, logo_front_color));
+    xprintf("%z   .5#BG#P.    !JYYJ?G#.  I#^   ^#:  GP  I#^    Y#:\n", set_output_color(logo_back_color, logo_front_color));
+    xprintf("%z .Y##/ i#G.   ?#^   :G#.  I#^   ~#:  GP  I#^    Y#:%z  version 22.03v\n", set_output_color(logo_back_color, logo_front_color), set_output_color(black,white));
+    xprintf("%z7GB5.    5BG. .5G555J?B^  I#^   ^#:  P5  I#^    JB:%z  weekday: %s \n\n\n", set_output_color(logo_back_color, logo_front_color), set_output_color(black,white), weekDaysLUT[time.weekDay]);
+
+    */
+
+    keyboard_command = command_buffer;
+
+    xprintf("DETECTING USB CONTROLLERS. PLEASE WAIT...\n");
+
+    usb_detect();
+
+    xprintf("\n%zUSB DETECTION TEST ENDED. PRESS ENTER TO START XANIN OS\n",
+            set_output_color(green,white));
+
+
+    xprintf("\n\n");
+   
 
     //xprintf("cpu mhz %dMHz\n", cpu_mhz);
     //xprintf("cpu khz %dKHz\n", cpu_khz);
 
-    while(getscan() != ENTER);
+    zsk("100");
 
+    //while(getscan() != ENTER);
     //getCpuSpeed();
 
     srand(time.seconds);
@@ -136,12 +138,12 @@ void _start(void)
 
     tuiInit:
 
-    clearScr();
+    screen_clear();
     
     //asm("int 0xFF");
     //asm("int 13");// <-- GENERAL PROTECTION EXCEPTION TEST
 
-    getTime();
+    time_get();
 
    
     //xprintf("xaninOS\n");
@@ -176,7 +178,7 @@ void _start(void)
         if(app_exited)
         {
             app_exited = false;
-            for(int i = 0; i < sizeof(comBuf); i++)
+            for(int i = 0; i < sizeof(command_buffer); i++)
                 keyboard_command[i] = '\0';
             goto tuiInit;
         }
