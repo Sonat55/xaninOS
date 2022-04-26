@@ -2,6 +2,7 @@
 
 #include <terminal/interpreter.h>
 
+char scanf_str[40] = "%s %s %s %s %s";
 
 void scan(void)
 {
@@ -11,13 +12,20 @@ void scan(void)
     for(int i = 0; i < 40; i++)
         program_parameters[i] = '\0';
 
-    xscanf("%s %s",program_name, program_parameters);
+    xscanf(scanf_str,program_name, program_parameters, program_parameters1, program_parameters2, program_parameters3);
 
     erase_spaces(program_name);
     erase_spaces(program_parameters);
+    
 
+
+    /*
     xprintf("\n%s\n", program_name);
     xprintf("%s\n", program_parameters);
+    xprintf("%s\n", program_parameters1);
+    xprintf("%s\n", program_parameters2);
+    xprintf("%s\n", program_parameters3);
+    */
 
     KeyInfo.character = 0x0;
     KeyInfo.scan_code = 0x0;
@@ -26,14 +34,17 @@ void scan(void)
 
     keyboard_handle = nullptr;
 
-    //keyboard_buffer_refresh(&Screen.cursor[8][1]);
+    
+    /*
+    keyboard_buffer_refresh(&Screen.cursor[8][1]);
 
     xprintf("command:\n");
 
     for(int i = 0; i < 40; i++)
         putchar(keyboard_command[i]);
 
-    //while(KeyInfo.scan_code != ENTER);
+    while(KeyInfo.scan_code != ENTER);
+    */
 
     if(cmpstr(program_name,"touch"))
     {
@@ -41,6 +52,11 @@ void scan(void)
         //xprintf("1");
         //while(KeyInfo.scan_code != ENTER);
         //touch();
+    }
+
+    else if(cmpstr(program_name,"xagame_test"))
+    {
+        xagame_test();
     }
 
     else if(cmpstr(program_name,"zsk"))
@@ -60,7 +76,27 @@ void scan(void)
 
         epilepsy();
     }    
+
+    else if(cmpstr(program_name, "hexeditor"))
+    {
+        hexeditor(program_parameters);
+    }
+
+    else if(cmpstr(program_name,"run16"))
+    {
+        run16(program_parameters);
+    }
     
+    else if(cmpstr(program_name,"run"))
+    {
+        run(program_parameters);
+    }
+
+    else if(cmpstr(program_name,"stack_test"))
+    {
+        stack_frame_test(0x10, 0x20);
+    }
+
     else if(cmpstr(program_name,"cpu_info"))
     {
         cpu_info();
@@ -68,7 +104,7 @@ void scan(void)
 
     else if(cmpstr(program_name,"calc"))
     {
-        //calc();
+        calc();
     }
 
     else if(cmpstr(program_name,"paint"))
@@ -91,9 +127,30 @@ void scan(void)
         //xprintf("4");
         //while(KeyInfo.scan_code != ENTER);
         
-    	keyboard_scan_code = 0x0;
+    	KeyInfo.scan_code = 0x0;
     	load(strtoi(program_parameters, 16));
     	app_exited = true;
+    }
+
+    else if(cmpstr(program_name,"install"))
+    {
+        install();
+    }
+
+    else if(cmpstr(program_name,"disk_load"))
+    {
+        disk_load(strtoi(program_parameters,16), strtoi(program_parameters1, 16), strtoi(program_parameters2, 16));
+    }
+
+    else if(cmpstr(program_name,"disk_write"))
+    {
+        disk_write_data(strtoi(program_parameters,16), strtoi(program_parameters1, 16), strtoi(program_parameters2, 16));
+    }
+
+    else if(cmpstr(program_name,"execute_addr"))
+    {
+        execute_addr(strtoi(program_parameters, 16));
+        app_exited = true;
     }
     
     else if(cmpstr(program_name,"key-test"))
@@ -104,19 +161,27 @@ void scan(void)
         keyboard_test();
     }
      
+    /*
+    else if(cmpstr(program_name,"shooter"))
+    {
+        shooter();
+    }
+    */
+
+
     else if(cmpstr(program_name,"modify"))
     {
         //xprintf("6");
         //while(KeyInfo.scan_code != ENTER);
         
     	xprintf("%s\n", program_parameters);
-    	keyboard_scan_code = 0x0;
+    	KeyInfo.scan_code = 0x0;
     	app_exited = true;
     }
 	
     else if(cmpstr(program_name, "pong"))
     {
-        pong_init();
+        pong();
         
     }
 
@@ -125,7 +190,7 @@ void scan(void)
         //xprintf("7");
         //while(KeyInfo.scan_code != ENTER);
         
-		keyboard_scan_code = 0x0;
+		KeyInfo.scan_code = 0x0;
 		loadch(strtoi(program_parameters, 16));
 		app_exited = true;
 	}	
@@ -227,7 +292,7 @@ void scan(void)
         //while(KeyInfo.scan_code != ENTER);
         
         xprintf("%s\n", xin_current_directory);
-        while(keyboard_scan_code != ENTER);
+        while(KeyInfo.scan_code != ENTER);
         exit_process();
     }
 
@@ -281,10 +346,7 @@ void scan(void)
 
     else if(cmpstr(program_name,"ls") || cmpstr(program_name,"dir"))
     {
-        //xprintf("t");
-        //while(KeyInfo.scan_code != ENTER);
-
-        //ls();
+        list_files();
     }
     
     else if(cmpstr(program_name,"note"))
@@ -332,7 +394,7 @@ void scan(void)
         xprintf("%zunknown command",set_output_color(red,white));
         logo_front_color = red;
 
-        keyboard_scan_code = 0x0;        
+        KeyInfo.scan_code = 0x0;        
         keyboard_input = 0x0;
 
         KeyInfo.scan_code = 0x0;

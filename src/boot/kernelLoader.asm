@@ -7,6 +7,8 @@ jmp enter_32
 elf_load_address: dd 0x90909090
 
 enter_32:
+
+
 mov ax, 0x2000
 mov ds, ax
 mov es, ax
@@ -20,7 +22,6 @@ lgdt[_GDT_ADDR] ;LGDT ALWAYS BEFORE ENTERING 32-BIT MODE
 mov eax, cr0
 or eax, 0x1
 mov cr0,eax
-
 
 jmp dword CODE_SEGMENT:(_bits32)
 
@@ -90,10 +91,6 @@ out 0xA1,al
 
 
 ;stack test 
-nop
-nop
-nop
-
 push 0x11111111
 push 0x22222222
 push 0x33333333
@@ -178,20 +175,20 @@ _GDT_ADDR:
 
 _GDT:
 
+    ;0x0
     ;null segment
-    ;---------
     dd 0x0
     dd 0x0
-    ;---------
 
+    ;0x8
     ;code segment
-    ;should work :))
     dd 0x0000ffff 
     db 0x0
     db 10011110b
     db 11001111b
     db 0x0
 
+    ;0x10
     ;data segment
     dd 0x0000ffff 
     db 0x0
@@ -199,6 +196,7 @@ _GDT:
     db 11001111b
     db 0x0
 
+    ;0x18
     ;stack segment
     dw 0
     dw 0xffff   
@@ -206,6 +204,24 @@ _GDT:
     db 10010110b
     db 01000000b
     db 0xff
+
+    ;0x20
+    ;16bit code segment
+    dd 0x0000ffff 
+    db 0x0
+    db 10011000b
+    db 00001111b
+    db 0x0
+    
+    ;0x28
+    ;16bit data segment
+    dd 0x0000ffff 
+    db 0x0
+    db 10010010b
+    db 00001111b
+    db 0x0
+
+
 
 _GDT_END:
 

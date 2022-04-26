@@ -13,6 +13,7 @@ enum special_keys
   BSPC = 0xE,
   BSPC_RELEASE = 0x8E,
   ENTER = 0x1C,
+  ENTER_RELEASE = 0x9C,
   ESC = 0x1,
   CAPS = 0x3A,
   ARROW_UP = 72,
@@ -38,8 +39,6 @@ enum special_keys
 };
 
 
-
-uint8_t keyboard_scan_code;
 
 uint8_t keyboard_map[128] = {
   // -------- 0 to 9 --------

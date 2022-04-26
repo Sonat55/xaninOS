@@ -16,6 +16,7 @@ void note_input(void)
     uint8_t selected_character;
     uint8_t x_save, y_save;
 
+    /*
 
     x_save = Screen.x;
     y_save = Screen.y;
@@ -26,7 +27,14 @@ void note_input(void)
     Screen.x = x_save;
     Screen.y = y_save;
 
-    if(KeyInfo.is_bspc)
+    */
+
+    if(KeyInfo.scan_code == F4_KEY || KeyInfo.scan_code == ESC)
+    {
+        app_exited = true;
+    }
+
+    else if(KeyInfo.is_bspc)
     {       
         Screen.cursor[Screen.y][Screen.x] = (uint16_t)((char)(Screen.cursor[Screen.y][Screen.x]) + (((black << 4) | white) << 8));
 
@@ -42,8 +50,8 @@ void note_input(void)
         Screen.cursor[Screen.y][Screen.x] = '\0';
         Screen.cursor[Screen.y][Screen.x] = (uint16_t)((char)(Screen.cursor[Screen.y][Screen.x]) + (((white << 4) | black) << 8));
 
-        msleep(10);
         KeyInfo.is_bspc = false;
+        return;
         letters_refresh(&Screen.cursor[Screen.y][Screen.x]);
     
     }
@@ -113,7 +121,7 @@ void note_input(void)
     {
         Screen.cursor[Screen.y][Screen.x] = (uint16_t)((char)(Screen.cursor[Screen.y][Screen.x]) | (((black << 4) | white) << 8));
         xprintf("\r\n");
-        Screen.cursor[Screen.y][Screen.x] = (uint16_t)((char)(Screen.cursor[Screen.y][Screen.x]) | (((white << 4) | black) << 8));
+        Screen.cursor[Screen.y][Screen.x] = (uint16_t)((char)(Screen.cursor[Screen.y][Screen.x]) | (((white << 4) | white) << 8));
     }
 
     else if(KeyInfo.scan_code == TAB_KEY)
@@ -134,8 +142,7 @@ void note_input(void)
     }  
 
 
-
-
+    /*
     x_save = Screen.x;
     y_save = Screen.y;
 
@@ -145,7 +152,7 @@ void note_input(void)
     Screen.x = x_save;
     Screen.y = y_save;
 
-    /*
+    
     else if(getscan() == DELETE_KEY)
     {
         Screen.cursor[Screen.y][Screen.x] = '\0';
@@ -162,60 +169,52 @@ void xin_note(char* file_name)
     keyboard_handle = note_input;
     use_backspace = true;
 
-    xin_entry* xin_file = xin_find_entry(file_name);
+    //xin_entry* xin_file = xin_find_entry(file_name);
     
+    xin_entry* xin_file = fopen(file_name, "rw");
+
     if(xin_file == nullptr)
     {
-        xprintf("%zno such file or directory %s\n",set_output_color(red,white),program_parameters);
-        keyboard_handle = nullptr;
-        while(1)
-        {
-            if((getscan() == F4_KEY) || (getscan() == ENTER))
-            {
-                exit_process();
-            }
-        }   
-    
+        xprintf("Could not open file: %s\n", file_name);
+
+        while(KeyInfo.scan_code != ENTER);
+
     }
         
     else
     {
-    
-        if(xin_file->entry_type == XIN_DIRECTORY)
-        {
-            xprintf("%zyou cant edit directory\n",set_output_color(red,white));
-            xprintf("%zuse F4 key to exit\n",set_output_color(red,white));
-            while(keyboard_scan_code != F4_KEY);
-            exit_process();
-        }
 
+        if(xin_file->os_specific == XIN_READ_ONLY)
+        {
+            xprintf("%zYOUR ARE EDITING READ-ONLY FILE. CHANGES WILL NOT BE SAVED.", set_output_color(red,white));
+            while(KeyInfo.scan_code != ENTER);
+        }
 
         //for(uint8_t* xin_pointer_table = (uint8_t*)(XIN_POINTER_TABLE + xin_entry->starting_sector); *xin_pointer_table != XIN_EOF; xin_pointer_table++)
         
         char* data_pointer = xin_file->starting_sector * SECTOR_SIZE;
 
+        uint16_t* bruh_moment = VGA_TEXT_MEMORY;
         
         for(int i = 0;  i < (VGA_SCREEN_RESOLUTION / 2); i++)
-        {
-            xprintf("%c",data_pointer[i]);
-        }
+            bruh_moment[i] = (uint16_t) (data_pointer[i] + (((black << 4) | white) << 8));
+        
 
-        while(getscan() != F4_KEY && getscan() != ESC);
+        while(!app_exited);
 
         uint32_t file_data_counter = 0x0;
 
         data_pointer = (char*)(xin_file->starting_sector * SECTOR_SIZE);
 
-        for(char* i = (char*)VGA_TEXT_MEMORY; 
-                (uint32_t)i < VGA_TEXT_MEMORY + VGA_SCREEN_RESOLUTION; i+=2)
-                if(*i == '\0')
-                    *i = 0x20;
+        if(xin_file->os_specific != XIN_READ_ONLY)
+        {
 
         for(char* i = (char*)VGA_TEXT_MEMORY; 
-                (uint32_t)i < VGA_TEXT_MEMORY + VGA_SCREEN_RESOLUTION; i+=2, file_data_counter++)
+            (uint32_t)i < VGA_TEXT_MEMORY + VGA_SCREEN_RESOLUTION; i+=2, file_data_counter++)
                 data_pointer[file_data_counter] = *i;
 
         xin_file->entry_size = file_data_counter;
+        }
 
     }
 

@@ -1,6 +1,13 @@
 {
     "files.associations": {
         "vty.c": "cpp",
-        "stdiox.h": "c"
+        "stdiox.h": "c",
+        "stdint.h": "c",
+        "array": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "utility": "c",
+        "*.tcc": "cpp",
+        "tmp": "cpp"
     }
 }

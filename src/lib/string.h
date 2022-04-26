@@ -1,8 +1,7 @@
 
 #pragma once
 
-
-
+#include <lib/math.h>
 
 uint32_t strlen(char* a)
 {
@@ -48,6 +47,34 @@ char* reverse_string(char* str)
     return str;
 
 }
+
+char* float_to_string(float number, char* str)
+{
+    uint32_t* float_ptr = (uint32_t*)&number;
+    bool sign_bit = (*float_ptr & (1 << 31) >> 31);
+    uint8_t exponent = (*float_ptr & (0xFF << 23) >> 23);
+    exponent -= 127;
+    exponent = pow(2,exponent);
+    uint32_t mantissa = (*float_ptr & 0x7FFFFF);
+
+    uint32_t number_high;
+    uint32_t number_low;
+
+    int i = 0;
+
+    number_high = exponent * mantissa;
+
+    if(sign_bit)
+    {
+        str[i] = '-';
+        i++;
+    }
+
+
+
+
+}
+
 
 uint32_t cmpstr(char* a,char* b)
 {
@@ -194,6 +221,27 @@ char* int_to_hex_str(uint32_t x, char* buf)
 
 }
 
+uint32_t hex_str_to_int(char* str)
+{
+    
+    uint32_t value = 0;
+
+    for(char* i = str; *i != '\0' && *i != ' '; i++)
+    {
+        value = value * 0x10;
+
+        if(*i >= '0' && *i <= '9')
+            value += *i - '0';
+        
+        else if(*i >= 'A' && *i <= 'F')
+            value += *i - 'A' + 0xa;
+
+    }
+
+    return value;
+
+}
+
 char* xint_to_hex_str(uint32_t x, char* buf, uint8_t how_many_chars)
 {
     how_many_chars *= 2;
@@ -294,7 +342,7 @@ uint32_t strtoi(char* str, uint8_t format)
     if(format > 16) 
         format = 16;
 
-    uint16_t* tmp_text = VGA_TEXT_MEMORY;
+    uint16_t* tmp_text = (uint16_t*)VGA_TEXT_MEMORY;
     uint8_t digit_counter = strlen(str);
 	uint32_t tmp;
 

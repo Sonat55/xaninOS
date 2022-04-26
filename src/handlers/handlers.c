@@ -20,7 +20,7 @@ extern void keyboard_handler_init(void);
 
 void floppy_interrupt(void)
 {
-    sprint(red,white,"FLOPPY ERROR");
+    xprintf("FLOPPY ERROR");
     
     asm("cli");
     asm("hlt");
@@ -47,16 +47,15 @@ void divide_by_zero_exception(void)
 void pit_handler(void)
 {
     pitActive = true;
-
-    pit_current_time++;
-
+    //xprintf("h");
+    pit_tick(0xFFFF);
 }
 
 void keyboard_handler(void)
 {
     keyStatus = inbIO(KEYBOARD_STATUS_REG); // if status & 1 (ON)
-    keyboard_scan_code = inbIO(KEYBOARD_DATA_REG); // get keyboard_scan_code
-    keyboard_driver(keyboard_scan_code);
+    KeyInfo.scan_code = inbIO(KEYBOARD_DATA_REG); // get KeyInfo.scan_code
+    keyboard_driver(KeyInfo.scan_code);
 }
  
 void debug_exception(void)
@@ -230,6 +229,12 @@ void control_protection_exception(void)
     asm("hlt");
 }
 
+void no_handler(void)
+{
+    asm("out 0x20, al":: "ax"(0x20));
+    
+    while(1);
+}
 
 void reboot_interrupt(void)
 {

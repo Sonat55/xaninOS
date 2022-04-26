@@ -18,7 +18,10 @@ enum xin_fs_properties
     XIN_FILE = 'F',
     XIN_DIRECTORY = 'D',
     XIN_LINK = 'L',
-    XIN_HARD_LINK = 'H'
+    XIN_HARD_LINK = 'H',
+
+    XIN_READ_ONLY = 0x10
+
 };
 
 struct xin_entry
@@ -34,6 +37,7 @@ struct xin_entry
     uint8_t entry_permissions;
     uint32_t entry_size;    
     uint32_t starting_sector;
+    uint32_t file_position;
 
 }__attribute__((packed));
 
@@ -60,5 +64,5 @@ xin_entry* xin_change_directory(char* new_directory);
 void xin_entry_info(char* entry_name);
 
 void xin_entry_resize(uint16_t last_sector);
-
+xin_entry* fopen(char* file_path, const char* mode);
 
